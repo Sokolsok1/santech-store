@@ -4,7 +4,7 @@ const pool = require('../config/db')
 
 router.get('/', async (req, res) => {
 
-  const { category, page = 1, limit = 6, ...filters } = req.query
+  const { category, page = 1, limit = 6, sort = 'price_asc', ...filters } = req.query
 
   const offset = (page - 1) * limit
 
@@ -27,7 +27,6 @@ router.get('/', async (req, res) => {
 
   // фильтры
   for (let key in filters) {
-
     baseQuery += `
       AND p.id IN (
         SELECT pa.product_id
@@ -36,20 +35,35 @@ router.get('/', async (req, res) => {
         WHERE a.slug = $${i} AND pa.value = $${i+1}
       )
     `
-
     params.push(key, filters[key])
     i += 2
   }
 
-  // 🔹 ОБЩЕЕ КОЛИЧЕСТВО
+  // 🔥 СОРТИРОВКА
+  let orderBy = 'p.price ASC'
+
+  switch (sort) {
+    case 'price_desc':
+      orderBy = 'p.price DESC'
+      break
+    case 'name_asc':
+      orderBy = 'p.name ASC'
+      break
+    case 'name_desc':
+      orderBy = 'p.name DESC'
+      break
+  }
+
+  // количество
   const countQuery = `SELECT COUNT(DISTINCT p.id) ${baseQuery}`
   const countResult = await pool.query(countQuery, params)
   const total = parseInt(countResult.rows[0].count)
 
-  // 🔹 ТОВАРЫ С ПАГИНАЦИЕЙ
+  // данные
   const dataQuery = `
     SELECT DISTINCT p.*, pi.image_url AS image
     ${baseQuery}
+    ORDER BY ${orderBy}
     LIMIT $${i} OFFSET $${i + 1}
   `
 

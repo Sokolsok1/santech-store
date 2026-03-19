@@ -10,7 +10,7 @@ const limit = 6;
 const API = "http://localhost:5000/api";
 
 // =====================
-// ФИЛЬТРЫ
+// ФИЛЬТРЫ + СОРТИРОВКА
 // =====================
 async function loadFilters() {
 
@@ -20,7 +20,6 @@ async function loadFilters() {
   const categorySelect = document.createElement('select');
   categorySelect.className = 'form-select form-select-sm mb-2';
   categorySelect.id = 'categoryFilter';
-
   categorySelect.innerHTML = `<option value="">Все категории</option>`;
   filtersContainer.appendChild(categorySelect);
 
@@ -30,13 +29,24 @@ async function loadFilters() {
   categories.forEach(cat => {
     if (!cat.parent_id) {
       categorySelect.innerHTML += `<option value="${cat.slug}">${cat.name}</option>`;
-
       const subs = categories.filter(c => c.parent_id === cat.id);
       subs.forEach(sub => {
         categorySelect.innerHTML += `<option value="${sub.slug}">— ${sub.name}</option>`;
       });
     }
   });
+
+  // 🔥 СОРТИРОВКА
+  const sortSelect = document.createElement('select');
+  sortSelect.className = 'form-select form-select-sm mb-2';
+  sortSelect.id = 'sortFilter';
+  sortSelect.innerHTML = `
+    <option value="price_asc">Цена ↑</option>
+    <option value="price_desc">Цена ↓</option>
+    <option value="name_asc">Название А-Я</option>
+    <option value="name_desc">Название Я-А</option>
+  `;
+  filtersContainer.appendChild(sortSelect);
 
   // атрибуты
   const attrRes = await fetch(`${API}/attributes`);
@@ -68,9 +78,12 @@ async function loadProducts(page = 1) {
   currentPage = page;
 
   const category = document.getElementById('categoryFilter').value;
+  const sort = document.getElementById('sortFilter').value;
+
   const query = new URLSearchParams();
 
   if (category) query.append('category', category);
+  if (sort) query.append('sort', sort);
 
   for (const slug in attributeSelects) {
     const val = attributeSelects[slug].value;
@@ -155,9 +168,12 @@ applyBtn.addEventListener('click', () => loadProducts(1));
 
 resetBtn.addEventListener('click', () => {
   document.getElementById('categoryFilter').value = '';
+  document.getElementById('sortFilter').value = 'price_asc';
+
   for (const key in attributeSelects) {
     attributeSelects[key].value = '';
   }
+
   loadProducts(1);
 });
 
