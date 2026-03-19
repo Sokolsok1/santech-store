@@ -4,7 +4,7 @@ const pool = require('../config/db')
 
 router.get('/', async (req, res) => {
 
-  const { category, page = 1, limit = 6, sort = 'price_asc', ...filters } = req.query
+  const { category, page = 1, limit = 6, sort = 'price_asc', availability, ...filters } = req.query
 
   const offset = (page - 1) * limit
 
@@ -25,7 +25,30 @@ router.get('/', async (req, res) => {
     i++
   }
 
-  // фильтры
+  // 🔥 ФИЛЬТР НАЛИЧИЯ
+  if (availability) {
+    const statuses = availability.split(',')
+
+    const conditions = []
+
+    if (statuses.includes('in_stock')) {
+      conditions.push(`p.stock > 0`)
+    }
+
+    if (statuses.includes('out_of_stock')) {
+      conditions.push(`p.stock = 0`)
+    }
+
+    if (statuses.includes('preorder')) {
+      conditions.push(`p.stock < 0`)
+    }
+
+    if (conditions.length) {
+      baseQuery += ` AND (${conditions.join(' OR ')})`
+    }
+  }
+
+  // фильтры атрибутов
   for (let key in filters) {
     baseQuery += `
       AND p.id IN (
@@ -39,7 +62,7 @@ router.get('/', async (req, res) => {
     i += 2
   }
 
-  // 🔥 СОРТИРОВКА
+  // сортировка
   let orderBy = 'p.price ASC'
 
   switch (sort) {

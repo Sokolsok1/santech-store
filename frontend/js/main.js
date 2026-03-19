@@ -10,7 +10,7 @@ const limit = 6;
 const API = "http://localhost:5000/api";
 
 // =====================
-// ФИЛЬТРЫ + СОРТИРОВКА
+// ФИЛЬТРЫ
 // =====================
 async function loadFilters() {
 
@@ -47,6 +47,26 @@ async function loadFilters() {
     <option value="name_desc">Название Я-А</option>
   `;
   filtersContainer.appendChild(sortSelect);
+
+  // 🔥 ЧЕКБОКСЫ НАЛИЧИЯ
+  const availabilityBlock = document.createElement('div');
+  availabilityBlock.className = 'mb-3';
+
+  availabilityBlock.innerHTML = `
+    <h6>Наличие</h6>
+    <div>
+      <input type="checkbox" value="in_stock"> В наличии
+    </div>
+    <div>
+      <input type="checkbox" value="out_of_stock"> Ожидает поступления
+    </div>
+    <div>
+      <input type="checkbox" value="preorder"> Под заказ
+    </div>
+  `;
+
+  availabilityBlock.id = 'availabilityFilters';
+  filtersContainer.appendChild(availabilityBlock);
 
   // атрибуты
   const attrRes = await fetch(`${API}/attributes`);
@@ -85,6 +105,14 @@ async function loadProducts(page = 1) {
   if (category) query.append('category', category);
   if (sort) query.append('sort', sort);
 
+  // 🔥 собираем чекбоксы
+  const checked = document.querySelectorAll('#availabilityFilters input:checked');
+  if (checked.length) {
+    const values = Array.from(checked).map(el => el.value);
+    query.append('availability', values.join(','));
+  }
+
+  // атрибуты
   for (const slug in attributeSelects) {
     const val = attributeSelects[slug].value;
     if (val) query.append(slug, val);
@@ -101,7 +129,7 @@ async function loadProducts(page = 1) {
 }
 
 // =====================
-// РЕНДЕР ТОВАРОВ
+// РЕНДЕР
 // =====================
 function renderProducts(products) {
 
@@ -113,15 +141,22 @@ function renderProducts(products) {
   }
 
   products.forEach(p => {
+
+    let stockLabel = '';
+
+    if (p.stock > 0) stockLabel = '<span class="text-success">В наличии</span>';
+    else if (p.stock === 0) stockLabel = '<span class="text-warning">Ожидается</span>';
+    else stockLabel = '<span class="text-secondary">Под заказ</span>';
+
     productsContainer.innerHTML += `
       <div class="col-md-4 mb-3">
         <div class="card h-100 shadow-sm">
-          <img src="${p.image || 'https://via.placeholder.com/300x200'}" 
-               class="card-img-top">
+          <img src="${p.image || 'https://via.placeholder.com/300x200'}" class="card-img-top">
 
           <div class="card-body d-flex flex-column">
             <h6>${p.name}</h6>
             <p class="fw-bold">${p.price} ₽</p>
+            ${stockLabel}
 
             <a href="product.html?slug=${p.slug}" 
                class="btn btn-primary btn-sm mt-auto">
@@ -169,6 +204,8 @@ applyBtn.addEventListener('click', () => loadProducts(1));
 resetBtn.addEventListener('click', () => {
   document.getElementById('categoryFilter').value = '';
   document.getElementById('sortFilter').value = 'price_asc';
+
+  document.querySelectorAll('#availabilityFilters input').forEach(el => el.checked = false);
 
   for (const key in attributeSelects) {
     attributeSelects[key].value = '';
