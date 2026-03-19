@@ -1,0 +1,40 @@
+body {
+    background: #f8f9fa;
+}
+
+.card {
+    border-radius: 12px;
+}
+
+.btn {
+    border-radius: 10px;
+}
+
+.category-card {
+    transition: 0.3s;
+}
+.category-card:hover {
+    transform: translateY(-5px);
+}
+
+.sticky-buy {
+    position: sticky;
+    top: 100px;
+}
+
+.mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+}
+
+@media (min-width: 992px) {
+    .mobile-bottom-nav {
+        display: none;
+    }
+}

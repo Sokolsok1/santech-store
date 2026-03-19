@@ -1,0 +1,18 @@
+<h2>Импорт товаров</h2>
+
+<form id="excelForm">
+<input type="file" name="file" class="form-control mb-3">
+<button class="btn btn-primary">Загрузить</button>
+</form>
+
+<script>
+document.getElementById('excelForm').onsubmit = async e => {
+    e.preventDefault()
+    const formData = new FormData(e.target)
+    await fetch('http://localhost:5000/api/upload', {
+        method: 'POST',
+        body: formData
+    })
+    alert('Импорт завершён')
+}
+</script>
