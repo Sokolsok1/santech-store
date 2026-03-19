@@ -4,10 +4,11 @@ const pool = require('../config/db')
 
 router.get('/', async (req, res) => {
 
-  const { category, ...filters } = req.query
+  const { category, page = 1, limit = 6, ...filters } = req.query
 
-  let query = `
-    SELECT DISTINCT p.*, pi.image_url AS image
+  const offset = (page - 1) * limit
+
+  let baseQuery = `
     FROM products p
     LEFT JOIN product_images pi ON pi.product_id = p.id
     JOIN categories c ON p.category_id = c.id
@@ -17,15 +18,17 @@ router.get('/', async (req, res) => {
   const params = []
   let i = 1
 
+  // категория
   if (category) {
-    query += ` AND c.slug = $${i}`
+    baseQuery += ` AND c.slug = $${i}`
     params.push(category)
     i++
   }
 
+  // фильтры
   for (let key in filters) {
 
-    query += `
+    baseQuery += `
       AND p.id IN (
         SELECT pa.product_id
         FROM product_attributes pa
@@ -38,9 +41,27 @@ router.get('/', async (req, res) => {
     i += 2
   }
 
-  const result = await pool.query(query, params)
+  // 🔹 ОБЩЕЕ КОЛИЧЕСТВО
+  const countQuery = `SELECT COUNT(DISTINCT p.id) ${baseQuery}`
+  const countResult = await pool.query(countQuery, params)
+  const total = parseInt(countResult.rows[0].count)
 
-  res.json(result.rows)
+  // 🔹 ТОВАРЫ С ПАГИНАЦИЕЙ
+  const dataQuery = `
+    SELECT DISTINCT p.*, pi.image_url AS image
+    ${baseQuery}
+    LIMIT $${i} OFFSET $${i + 1}
+  `
+
+  const dataParams = [...params, limit, offset]
+  const dataResult = await pool.query(dataQuery, dataParams)
+
+  res.json({
+    products: dataResult.rows,
+    total,
+    page: parseInt(page),
+    pages: Math.ceil(total / limit)
+  })
 })
 
 module.exports = router

@@ -3,20 +3,20 @@ const applyBtn = document.getElementById('applyFilters');
 const resetBtn = document.getElementById('resetFilters');
 const filtersContainer = document.getElementById('filters');
 
-let categories = [];
-let attributes = [];
 let attributeSelects = {};
+let currentPage = 1;
+const limit = 6;
 
 const API = "http://localhost:5000/api";
 
 // =====================
-// ЗАГРУЗКА ФИЛЬТРОВ
+// ФИЛЬТРЫ
 // =====================
 async function loadFilters() {
 
   filtersContainer.innerHTML = '';
 
-  // --- Категории ---
+  // категории
   const categorySelect = document.createElement('select');
   categorySelect.className = 'form-select form-select-sm mb-2';
   categorySelect.id = 'categoryFilter';
@@ -25,7 +25,7 @@ async function loadFilters() {
   filtersContainer.appendChild(categorySelect);
 
   const catRes = await fetch(`${API}/categories`);
-  categories = await catRes.json();
+  const categories = await catRes.json();
 
   categories.forEach(cat => {
     if (!cat.parent_id) {
@@ -38,16 +38,15 @@ async function loadFilters() {
     }
   });
 
-  // --- Атрибуты ---
+  // атрибуты
   const attrRes = await fetch(`${API}/attributes`);
-  attributes = await attrRes.json();
+  const attributes = await attrRes.json();
 
   attributeSelects = {};
 
   attributes.forEach(attr => {
     const select = document.createElement('select');
     select.className = 'form-select form-select-sm mb-2';
-    select.id = `${attr.attribute_slug}`;
 
     let html = `<option value="">Все ${attr.attribute_name}</option>`;
     attr.values.forEach(v => {
@@ -64,7 +63,9 @@ async function loadFilters() {
 // =====================
 // ЗАГРУЗКА ТОВАРОВ
 // =====================
-async function loadProducts() {
+async function loadProducts(page = 1) {
+
+  currentPage = page;
 
   const category = document.getElementById('categoryFilter').value;
   const query = new URLSearchParams();
@@ -76,14 +77,18 @@ async function loadProducts() {
     if (val) query.append(slug, val);
   }
 
-  const res = await fetch(`${API}/catalog?${query.toString()}`);
-  const products = await res.json();
+  query.append('page', page);
+  query.append('limit', limit);
 
-  renderProducts(products);
+  const res = await fetch(`${API}/catalog?${query.toString()}`);
+  const data = await res.json();
+
+  renderProducts(data.products);
+  renderPagination(data.pages);
 }
 
 // =====================
-// РЕНДЕР
+// РЕНДЕР ТОВАРОВ
 // =====================
 function renderProducts(products) {
 
@@ -117,19 +122,46 @@ function renderProducts(products) {
 }
 
 // =====================
+// ПАГИНАЦИЯ
+// =====================
+function renderPagination(pages) {
+
+  let pagination = document.getElementById('pagination');
+
+  if (!pagination) {
+    pagination = document.createElement('div');
+    pagination.id = 'pagination';
+    pagination.className = 'mt-4 d-flex gap-2 flex-wrap';
+    productsContainer.after(pagination);
+  }
+
+  pagination.innerHTML = '';
+
+  for (let i = 1; i <= pages; i++) {
+    pagination.innerHTML += `
+      <button 
+        class="btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-outline-primary'}"
+        onclick="loadProducts(${i})">
+        ${i}
+      </button>
+    `;
+  }
+}
+
+// =====================
 // СОБЫТИЯ
 // =====================
-applyBtn.addEventListener('click', loadProducts);
+applyBtn.addEventListener('click', () => loadProducts(1));
 
 resetBtn.addEventListener('click', () => {
   document.getElementById('categoryFilter').value = '';
   for (const key in attributeSelects) {
     attributeSelects[key].value = '';
   }
-  loadProducts();
+  loadProducts(1);
 });
 
 // =====================
 // СТАРТ
 // =====================
-loadFilters().then(loadProducts);
+loadFilters().then(() => loadProducts(1));
