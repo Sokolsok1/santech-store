@@ -1,31 +1,117 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Сантехника - Каталог</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Сантехника</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+
+<style>
+.hero {
+  background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+  color: white;
+  padding: 60px 0;
+  text-align: center;
+}
+.category-card {
+  cursor: pointer;
+}
+</style>
 </head>
+
 <body>
-  <div class="container mt-4">
-    <h1>Каталог товаров</h1>
 
-    <div class="row mb-3">
-      <!-- Фильтры -->
-      <div class="col-md-3">
-        <h5>Фильтры</h5>
-        <div id="filters"></div>
-        <button id="applyFilters" class="btn btn-primary btn-sm mt-2">Применить</button>
-        <button id="resetFilters" class="btn btn-secondary btn-sm mt-2">Сбросить фильтры</button>
-      </div>
+<!-- 🔥 ШАПКА -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="index.html">Santech Store</a>
 
-      <!-- Список товаров -->
-      <div class="col-md-9">
-        <div id="products" class="row"></div>
-      </div>
+    <div class="ms-auto">
+      <a href="catalog.html" class="btn btn-primary">Каталог</a>
     </div>
   </div>
+</nav>
 
-  <script src="js/main.js"></script>
+<!-- 🔥 HERO -->
+<section class="hero">
+  <div class="container">
+    <h1>Сантехника для дома и бизнеса</h1>
+    <p>Краны, фитинги, трубы и многое другое</p>
+    <a href="catalog.html" class="btn btn-light mt-3">Перейти в каталог</a>
+  </div>
+</section>
+
+<!-- 🔥 КАТЕГОРИИ -->
+<div class="container mt-5">
+  <h3 class="mb-4">Популярные категории</h3>
+
+  <div class="row">
+
+    <div class="col-md-3 mb-3">
+      <div class="card category-card p-3 text-center"
+           onclick="goToCategory('krany')">
+        Краны
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card category-card p-3 text-center"
+           onclick="goToCategory('truby')">
+        Трубы
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card category-card p-3 text-center"
+           onclick="goToCategory('fitingi')">
+        Фитинги
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card category-card p-3 text-center"
+           onclick="goToCategory('radiatory')">
+        Радиаторы
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 🔥 ПРЕИМУЩЕСТВА -->
+<div class="container mt-5">
+  <div class="row text-center">
+
+    <div class="col-md-4">
+      <h5>🚚 Быстрая доставка</h5>
+      <p>Отправка в день заказа</p>
+    </div>
+
+    <div class="col-md-4">
+      <h5>💰 Низкие цены</h5>
+      <p>Работаем напрямую с поставщиками</p>
+    </div>
+
+    <div class="col-md-4">
+      <h5>🔧 Качественный товар</h5>
+      <p>Проверенные бренды</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- 🔥 FOOTER -->
+<footer class="bg-light mt-5 p-4 text-center">
+  © 2026 Santech Store
+</footer>
+
+<script>
+function goToCategory(slug) {
+  window.location.href = `catalog.html?category=${slug}`;
+}
+</script>
+
 </body>
 </html>
