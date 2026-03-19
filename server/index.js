@@ -23,10 +23,10 @@ const attributeRoutes = require('./routes/attributeRoutes')
 const catalogRoutes = require('./routes/catalogRoutes')
 const filterRoutes = require('./routes/filterRoutes')
 
-app.use('/api/product', productRoutes)
-app.use('/api/category', categoryRoutes)
-app.use('/api/attribute', attributeRoutes)
-app.use('/api/products', catalogRoutes)
+app.use('/api/products', productRoutes)
+app.use('/api/categories', categoryRoutes)
+app.use('/api/attributes', attributeRoutes)
+app.use('/api/catalog', catalogRoutes)
 app.use('/api/filters', filterRoutes)
 
 // 404

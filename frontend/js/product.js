@@ -14,7 +14,7 @@ if (!slug) {
 
 async function loadProduct(slug) {
   try {
-    const res = await fetch(`http://localhost:5000/api/product/${slug}`);
+    const res = await fetch(`http://localhost:5000/api/products/${slug}`);
 
     if (!res.ok) {
       errorContainer.textContent = 'Товар не найден или сервер недоступен.';
@@ -26,8 +26,18 @@ async function loadProduct(slug) {
 
     productContainer.innerHTML = `
       <div class="row">
+      <button class="btn btn-primary mt-3" onclick='addToCart(${JSON.stringify(p)})'>
+  В корзину
+</button>
         <div class="col-md-6">
-          <img src="${p.image}" class="img-fluid" alt="${p.name}">
+          <div>
+  ${p.images && p.images.length
+        ? p.images.map(img => `
+        <img src="${img.image_url}" class="img-fluid mb-2">
+      `).join('')
+        : '<p>Нет изображений</p>'
+      }
+</div>
         </div>
         <div class="col-md-6">
           <h2>${p.name}</h2>
@@ -40,9 +50,9 @@ async function loadProduct(slug) {
           <h5>Характеристики:</h5>
           <ul>
             ${p.attributes && p.attributes.length > 0
-              ? p.attributes.map(a => `<li>${a.attribute_name}: ${a.attribute_value}</li>`).join('')
-              : '<li>Характеристики отсутствуют</li>'
-            }
+        ? p.attributes.map(a => `<li>${a.attribute_name}: ${a.attribute_value}</li>`).join('')
+        : '<li>Характеристики отсутствуют</li>'
+      }
           </ul>
         </div>
       </div>

@@ -20,7 +20,7 @@ async function loadFilters() {
   categorySelect.innerHTML = `<option value="">Все категории</option>`;
 
   // Получаем категории с сервера
-  const catRes = await fetch('http://localhost:5000/api/category');
+  const catRes = await fetch('http://localhost:5000/api/categories');
   categories = await catRes.json();
 
   categories.forEach(cat => {
@@ -35,7 +35,7 @@ async function loadFilters() {
   });
 
   // --- Фильтры по характеристикам ---
-  const attrRes = await fetch('http://localhost:5000/api/attribute');
+  const attrRes = await fetch('http://localhost:5000/api/attributes');
   attributes = await attrRes.json();
 
   attributeSelects = {}; // очищаем старые selects
@@ -67,8 +67,8 @@ async function loadProducts() {
   }
 
   const url = categorySlug
-    ? `http://localhost:5000/api/product/category/${categorySlug}?${query.toString()}`
-    : `http://localhost:5000/api/product?${query.toString()}`;
+  ? `http://localhost:5000/api/products/category/${categorySlug}?${query.toString()}`
+  : `http://localhost:5000/api/catalog?${query.toString()}`;
 
   const res = await fetch(url);
   const products = await res.json();
