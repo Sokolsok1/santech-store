@@ -1,117 +1,1555 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Сантехника</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Каталог — Аквасокол</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/render.js"></script>
+  <style>
+    /* ================================
+   ОБЩИЕ НАСТРОЙКИ СТРАНИЦЫ
+================================ */
+    html,
+    body {
+      height: 100%;
+    }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+    body {
+      padding-bottom: 60px;
+      display: flex;
+      flex-direction: column;
+    }
 
-<style>
-.hero {
-  background: linear-gradient(135deg, #0d6efd, #0dcaf0);
-  color: white;
-  padding: 60px 0;
-  text-align: center;
-}
-.category-card {
-  cursor: pointer;
-}
-</style>
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #e0f2f8;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: #0091c9;
+      border-radius: 10px;
+    }
+
+    .top-bar {
+      background-color: #0091c9;
+      color: white;
+      font-size: 0.95rem;
+    }
+
+    .top-bar a {
+      color: white;
+      text-decoration: none;
+      margin-right: 15px;
+    }
+
+    .catalog-btn {
+      background-color: #0091c9;
+      color: white;
+      font-size: 1.1rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .catalog-btn:hover {
+      background-color: #007dab;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      position: relative;
+      font-size: 1.3rem;
+    }
+
+    .icon-btn .badge {
+      position: absolute;
+      top: -5px;
+      right: -8px;
+      background-color: #0091c9;
+      font-size: 0.7rem;
+    }
+
+    .logo-img {
+      height: 55px;
+    }
+
+    .category-icon {
+      width: 60px;
+      height: 60px;
+      margin-right: 10px;
+      stroke: #007bff;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .subcategory-icon {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+      stroke: #007bff;
+      stroke-width: 1.5;
+      fill: none;
+    }
+
+    .mobile-header {
+      background-color: #0091c9;
+      padding: 0.5rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+
+    .mobile-bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #ddd;
+      z-index: 1030;
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5rem 0;
+    }
+
+    .mobile-bottom-bar .btn {
+      font-size: 1.5rem;
+    }
+
+    .mobile-catalog {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #ddd;
+      display: none;
+      position: relative;
+      z-index: 1020;
+    }
+
+    .mobile-catalog.active {
+      display: block;
+    }
+
+    .accordion-button::after {
+      margin-left: auto;
+    }
+
+    #mobileSearchBar {
+      display: none;
+      padding: 0.5rem;
+      background-color: #f8f9fa;
+      border-top: 1px solid #ccc;
+    }
+
+    #mobileSearchBar.active {
+      display: block;
+    }
+
+    @media (min-width: 768px) {
+
+      .mobile-header,
+      .mobile-bottom-bar,
+      .mobile-catalog,
+      #mobileSearchBar {
+        display: none !important;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      .desktop-header {
+        display: none !important;
+      }
+    }
+
+    /* Каталог для десктопа */
+    .catalog-container {
+      position: relative;
+    }
+
+    .catalog-dropdown {
+      display: none;
+      position: relative;
+      top: 30px;
+      /* Открываем меню под кнопкой с небольшим отступом */
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      z-index: 1050;
+      max-height: 500px;
+      overflow-y: auto;
+      margin-left: 200px;
+      margin-right: 200px;
+    }
+
+    .catalog-dropdown.show {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: flex-start;
+    }
+
+    .catalog-column {
+      min-width: 200px;
+    }
+
+    .catalog-dropdown img {
+      width: 60px;
+      height: 60px;
+    }
+
+    .catalog-dropdown h6 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+
+    .catalog-dropdown a {
+      display: block;
+      color: #000;
+      font-size: 0.875rem;
+      text-decoration: none;
+    }
+
+    .catalog-dropdown a:hover {
+      color: #0091c9;
+      text-decoration: underline;
+    }
+
+    .sidebar .accordion-button {
+      font-size: 1rem;
+      padding: 0.5rem;
+    }
+
+    .sidebar .category-icon {
+      width: 40px;
+      height: 40px;
+      margin-right: 8px;
+      stroke: #007bff;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .sidebar .subcategory-icon {
+      width: 30px;
+      height: 30px;
+      margin-right: 8px;
+      stroke: #007bff;
+      stroke-width: 1.5;
+      fill: none;
+    }
+
+    /* Убираем скроллбар */
+    .cat-strip {
+      overflow-x: auto;
+      gap: 25px;
+      scroll-behavior: smooth;
+    }
+
+    .cat-strip::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cat-strip {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Карточки категорий */
+    .cat-item {
+      min-width: 150px;
+    }
+
+    .cat-img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    /* Стрелки */
+    .cat-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.35);
+      color: white;
+      font-size: 1.6rem;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: 0.2s;
+      z-index: 10;
+    }
+
+    .cat-arrow:hover {
+      background: rgba(0, 0, 0, 0.55);
+      transform: translateY(-50%) scale(1.08);
+    }
+
+    .left-arrow {
+      left: 10px;
+    }
+
+    .right-arrow {
+      right: 10px;
+    }
+
+    /* Мобильные */
+    @media (max-width: 767px) {
+      .cat-item {
+        min-width: 120px;
+      }
+
+      .cat-img {
+        width: 120px;
+        height: 120px;
+      }
+
+      .cat-arrow {
+        display: none !important;
+      }
+
+      /* стрелки скрываются */
+    }
+
+    /* Эффект наведения на категории */
+    .cat-item {
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .cat-item:hover .cat-img {
+      transform: scale(1.08);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .cat-img {
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      border-radius: 12px;
+    }
+
+    /* На мобильных эффект отключен */
+    @media (max-width: 767px) {
+      .cat-item:hover .cat-img {
+        transform: none;
+        box-shadow: none;
+      }
+    }
+
+    /* Анимация модалок */
+    .animate-modal .modal-dialog {
+      transform: translateY(-40px);
+      opacity: 0;
+      transition: all .35s ease;
+    }
+
+    .animate-modal.show .modal-dialog {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .advantages-section {
+      background: #f3f6f8;
+      border-radius: 8px;
+    }
+
+    .advantages-icon {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      opacity: 0.9;
+    }
+
+    @media(max-width: 767px) {
+      .advantages-section {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+    }
+
+    .brand-img {
+      height: 70px;
+      width: auto;
+      object-fit: contain;
+      transition: transform .25s ease, opacity .25s ease;
+      opacity: 0.9;
+      cursor: pointer;
+    }
+
+    .brand-img:hover {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+
+    @media(max-width: 767px) {
+      .brand-img {
+        height: 55px;
+      }
+    }
+
+    .subscribe-box {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 15px 20px;
+      border: 1px solid #e6e6e6;
+    }
+
+    .subscribe-box h6 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .sub-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform .25s ease, opacity .25s ease;
+    }
+
+    .sub-icon img {
+      width: 24px;
+      height: 24px;
+    }
+
+    .sub-icon:hover {
+      transform: scale(1.1);
+      opacity: 0.9;
+    }
+
+    /* Цвета, как на скриншоте */
+    .sub-icon.tg {
+      background: #29A9EA;
+    }
+
+    .sub-icon.wa {
+      background: #59BB41;
+    }
+
+    .sub-icon.vk {
+      background: #1976D2;
+    }
+
+    /* ================================
+   ОБЩИЙ ФОН И ПАРАМЕТРЫ ПОДВАЛА
+================================ */
+    footer.footer-desktop,
+    footer.footer-mobile {
+      width: 100%;
+      background-color: #f2f4f6 !important;
+      /* светло-серый фон */
+      padding-top: 40px;
+      padding-bottom: 40px;
+      margin-top: auto;
+      /* приклеивает подвал к низу страницы */
+    }
+
+    /* чтобы контейнеры внутри не имели собственного фона */
+    .footer-desktop .container,
+    .footer-mobile .container {
+      background: none !important;
+    }
+
+    /* ================================
+   ДЕСКТОПНЫЙ ПОДВАЛ
+================================ */
+    .footer-title {
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+
+    .footer-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .footer-list li {
+      margin-bottom: 8px;
+    }
+
+    .footer-list a {
+      color: #333;
+      text-decoration: none;
+      transition: .2s;
+    }
+
+    .footer-list a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-social a img {
+      width: 28px;
+      height: 28px;
+      margin-right: 10px;
+    }
+
+    .footer-phone {
+      font-size: 18px;
+    }
+
+    .footer-phone-sub {
+      font-size: 13px;
+      color: #777;
+    }
+
+    .footer-divider {
+      border-color: #ddd;
+      margin: 30px 0;
+    }
+
+    .footer-bottom img {
+      margin-right: 10px;
+    }
+
+    /* ================================
+   МОБИЛЬНЫЙ ПОДВАЛ
+================================ */
+    .footer-mobile {
+      background: #f2f4f6 !important;
+    }
+
+    .footer-mobile-social {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .footer-mobile-social img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .footer-mobile-block {
+      background: #fff;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+    }
+
+    .footer-mobile-block h6 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .footer-mobile-block a {
+      display: block;
+      padding: 5px 0;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .footer-mobile-block a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-mobile-phone {
+      font-size: 18px;
+    }
+
+    .footer-mobile-phone .footer-phone-sub {
+      font-size: 13px;
+      color: #777;
+    }
+
+    /* ================================
+   КНОПКА "ВВЕРХ"
+================================ */
+    .btn-up,
+    .btn-up-mobile {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #0096c7;
+      /* фирменный цвет */
+      color: #fff;
+      font-size: 22px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      /* скрыта по умолчанию */
+      pointer-events: none;
+      transition: opacity .3s ease, transform .3s ease;
+      z-index: 999;
+    }
+
+    .show-up-btn {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .btn-up:hover,
+    .btn-up-mobile:hover {
+      background: #00a4d8;
+      transform: scale(1.08);
+    }
+
+    /* Мобильная версия кнопки вверх */
+    @media (max-width: 768px) {
+      .btn-up-mobile {
+        bottom: 20px;
+        right: 15px;
+        width: 48px;
+        height: 48px;
+      }
+    }
+
+    /* ================================
+   СКРЫВАЕМ ДЕСКТОПНЫЙ ФУТЕР НА МОБИЛЬНОМ
+================================ */
+    @media (max-width: 991px) {
+      .footer-desktop {
+        display: none !important;
+      }
+    }
+
+    /* А на ПК скрываем мобильный футер */
+    @media (min-width: 992px) {
+      .footer-mobile {
+        display: none !important;
+      }
+    }
+  </style>
 </head>
 
 <body>
-
-<!-- 🔥 ШАПКА -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="index.html">Santech Store</a>
-
-    <div class="ms-auto">
-      <a href="catalog.html" class="btn btn-primary">Каталог</a>
-    </div>
-  </div>
-</nav>
-
-<!-- 🔥 HERO -->
-<section class="hero">
-  <div class="container">
-    <h1>Сантехника для дома и бизнеса</h1>
-    <p>Краны, фитинги, трубы и многое другое</p>
-    <a href="catalog.html" class="btn btn-light mt-3">Перейти в каталог</a>
-  </div>
-</section>
-
-<!-- 🔥 КАТЕГОРИИ -->
-<div class="container mt-5">
-  <h3 class="mb-4">Популярные категории</h3>
-
-  <div class="row">
-
-    <div class="col-md-3 mb-3">
-      <div class="card category-card p-3 text-center"
-           onclick="goToCategory('krany')">
-        Краны
+  <!-- Верхняя панель (только ПК) -->
+  <div class="top-bar py-2 px-3 d-none d-md-flex justify-content-center">
+    <div class="d-flex justify-content-between align-items-center w-100" style="max-width: 1140px">
+      <div class="d-flex">
+        <a href="#">На главную</a>
+        <a href="#">Как сделать заказ</a>
+      </div>
+      <div class="d-flex">
+        <span class="me-3">+7 977 186 12 0</span>
+        <span>Пн–Пт с 9:00 до 18:00</span>
       </div>
     </div>
-
-    <div class="col-md-3 mb-3">
-      <div class="card category-card p-3 text-center"
-           onclick="goToCategory('truby')">
-        Трубы
-      </div>
-    </div>
-
-    <div class="col-md-3 mb-3">
-      <div class="card category-card p-3 text-center"
-           onclick="goToCategory('fitingi')">
-        Фитинги
-      </div>
-    </div>
-
-    <div class="col-md-3 mb-3">
-      <div class="card category-card p-3 text-center"
-           onclick="goToCategory('radiatory')">
-        Радиаторы
-      </div>
-    </div>
-
   </div>
-</div>
+  <!-- Десктопная шапка -->
+  <div class="container-fluid py-3 px-3 desktop-header d-none d-md-block">
+    <div class="d-flex flex-wrap align-items-center justify-content-center mx-auto catalog-container"
+      style="max-width: 1140px">
+      <div class="me-4 text-center">
+        <img src="png/logo-2.png" class="logo-img" alt="Логотип" />
 
-<!-- 🔥 ПРЕИМУЩЕСТВА -->
-<div class="container mt-5">
-  <div class="row text-center">
-
-    <div class="col-md-4">
-      <h5>🚚 Быстрая доставка</h5>
-      <p>Отправка в день заказа</p>
+      </div>
+      <div class="me-3">
+        <button class="btn catalog-btn" id="catalogToggle">
+          <i class="bi bi-list me-2"></i>Каталог
+        </button>
+      </div>
+      <div class="flex-fill me-3">
+        <div class="input-group">
+          <input type="text" class="form-control form-control-lg" placeholder="Поиск" />
+          <button class="btn catalog-btn">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <button class="icon-btn" title="Профиль">
+          <i class="bi bi-person"></i>
+        </button>
+        <button class="icon-btn" title="Избранное">
+          <i class="bi bi-heart"></i><span class="badge rounded-pill">0</span>
+        </button>
+        <button class="icon-btn" title="Сравнение">
+          <i class="bi bi-bar-chart-line"></i><span class="badge rounded-pill">0</span>
+        </button>
+        <button class="icon-btn" title="Корзина">
+          <i class="bi bi-bag"></i><span class="badge rounded-pill">0</span>
+        </button>
+        <span class="fw-bold fs-5">0 ₽</span>
+      </div>
     </div>
-
-    <div class="col-md-4">
-      <h5>💰 Низкие цены</h5>
-      <p>Работаем напрямую с поставщиками</p>
+    <!-- Каталог десктоп -->
+    <div class="catalog-dropdown mb-3" id="desktopCatalog">
+      <div class="d-flex flex-wrap">
+        <div class="catalog-column me-5">
+          <img src="Скриншоты категорий/Категории SVG/PNG/Трубы и фитинги.png" alt="Трубы" class="ms-4" />
+          <h6>Трубы и фитинги</h6>
+          <a href="#">PP-R трубы</a>
+          <a href="#">Фитинги сварные</a>
+          <a href="#">Фитинги компрессионные</a>
+        </div>
+        <div class="catalog-column me-5">
+          <img src="Скриншоты категорий/Категории SVG/PNG/Запорная арматура.png" alt="Арматура" class="ms-5" />
+          <h6>Запорная арматура</h6>
+          <a href="#">Краны шаровые</a>
+          <a href="#">Вентили</a>
+          <a href="#">Задвижки</a>
+        </div>
+        <div class="catalog-column me-5">
+          <img src="Скриншоты категорий/Категории SVG/PNG/Сантехника.png" alt="Сантехника" class="ms-3" />
+          <h6>Сантехника</h6>
+          <a href="#">Унитазы</a>
+          <a href="#">Смесители</a>
+          <a href="#">Фильтры</a>
+        </div>
+      </div>
     </div>
-
-    <div class="col-md-4">
-      <h5>🔧 Качественный товар</h5>
-      <p>Проверенные бренды</p>
-    </div>
-
   </div>
-</div>
+  <!-- Мобильная шапка -->
+  <div class="mobile-header d-md-none">
+    <button class="btn text-white fs-4" onclick="toggleCatalog()">
+      <i class="bi bi-list"></i>
+    </button>
+    <img src="png/logo-3.png" class="logo-img" alt="Логотип" />
+    <div class="position-relative">
+      <i class="bi bi-bag fs-4"></i>
+      <span class="position-absolute top-0 start-100 translate-middle badge bg-white text-primary rounded-pill">0</span>
+    </div>
+  </div>
+  <!-- Каталог (моб) -->
+  <div id="mobileCatalog" class="mobile-catalog d-md-none">
+    <div class="accordion" id="catalogAccordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="cat1">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#collapse1">
+            <img src="Скриншоты категорий/Категории SVG/PNG/Запорная арматура.png" alt="Краны"
+              class="category-icon" />Краны и вентили
+          </button>
+        </h2>
+        <div id="collapse1" class="accordion-collapse collapse" data-bs-parent="#catalogAccordion">
+          <div class="accordion-body ps-4">
+            <ul class="list-unstyled mb-0">
+              <li class="d-flex align-items-center mb-2">
+                <img
+                  src="Скриншоты категорий/Подкатегории/Запорная арматура/Снимок экрана 2025-03-23 155938_upscayl_4x_upscayl-standard-4x.png"
+                  class="subcategory-icon" alt="Шаровые краны" />
+                <a href="#" class="text-decoration-none text-dark">Шаровые краны</a>
+              </li>
+              <li class="d-flex align-items-center mb-2">
+                <img src="Скриншоты категорий/Подкатегории/Запорная арматура/Снимок экрана 2025-03-23 153423.png"
+                  class="subcategory-icon" alt="Запорные вентили" />
+                <a href="#" class="text-decoration-none text-dark">Запорные вентили</a>
+              </li>
+              <li class="d-flex align-items-center">
+                <img src="Скриншоты категорий/Подкатегории/Запорная арматура/Снимок экрана 2025-03-23 153521.png"
+                  class="subcategory-icon" alt="Обратные клапаны" />
+                <a href="#" class="text-decoration-none text-dark">Обратные клапаны</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Поиск моб -->
+  <div id="mobileSearchBar" class="d-md-none">
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="Поиск по товарам" />
+      <button class="btn btn-outline-secondary" onclick="toggleSearch()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+  </div>
+  <!-- Нижнее меню моб -->
+  <div class="mobile-bottom-bar d-md-none">
+    <button class="btn" title="Профиль"><i class="bi bi-person"></i></button>
+    <button class="btn position-relative" title="Избранное">
+      <i class="bi bi-heart"></i>
+      <span class="badge bg-info rounded-pill position-absolute top-0 start-100 translate-middle">0</span>
+    </button>
+    <button class="btn position-relative" title="Сравнение">
+      <i class="bi bi-bar-chart-line"></i>
+      <span class="badge bg-info rounded-pill position-absolute top-0 start-100 translate-middle">0</span>
+    </button>
+    <button class="btn" title="Поиск" onclick="toggleSearch()">
+      <i class="bi bi-search"></i>
+    </button>
+  </div>
 
-<!-- 🔥 FOOTER -->
-<footer class="bg-light mt-5 p-4 text-center">
-  © 2026 Santech Store
-</footer>
+  <!-- ========== МОБИЛЬНЫЙ ПОДВАЛ ========== -->
+  <footer class="footer-mobile d-lg-none mt-5">
 
-<script>
-function goToCategory(slug) {
-  window.location.href = `catalog.html?category=${slug}`;
-}
-</script>
+    <div class="container py-4">
 
+      <div class="text-center mb-3">
+        <img src="img/logo-footer.png" height="60" alt="">
+      </div>
+
+      <div class="footer-mobile-social mb-3">
+        <a href="#"><img src="img/social/tg.svg"></a>
+        <a href="#"><img src="img/social/wa.svg"></a>
+        <a href="#"><img src="img/social/vk.svg"></a>
+      </div>
+
+      <div class="footer-mobile-block">
+        <h6>Навигация</h6>
+        <a href="#">На основную страницу</a>
+        <a href="#">Как сделать заказ</a>
+        <a href="#">Доставка</a>
+        <a href="#">Контакты</a>
+      </div>
+
+      <div class="footer-mobile-block">
+        <h6>Документы</h6>
+        <a href="#">Политика конфиденциальности</a>
+        <a href="#">Пользовательское соглашение</a>
+        <a href="#">Условия возврата</a>
+      </div>
+
+      <div class="footer-mobile-phone text-center mt-3">
+        <b>+7 969 469 7602</b>
+        <div class="footer-phone-sub">справочная служба</div>
+      </div>
+
+      <div class="text-center mt-3">
+        <img src="img/payments/mastercard.png" height="28">
+        <img src="img/payments/visa.png" height="28">
+        <img src="img/payments/mir.png" height="28">
+      </div>
+
+    </div>
+
+    <a href="#" class="btn-up-mobile"><i class="bi bi-arrow-up"></i></a>
+  </footer>
+
+  <!-- Левый сайдбар -->
+  <div class="container my-4 d-none d-md-block">
+    <div class="row">
+      <aside class="col-md-3">
+        <div class="sidebar sticky-top" style="top: 90px">
+          <div class="accordion" id="sidebarAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="heading1">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#collapse1" aria-expanded="false" aria-controls="collapse1">
+                  <img src="Скриншоты категорий/Категории SVG/PNG/Трубы и фитинги.png" class="category-icon"
+                    alt="Трубы" />Трубы и фитинги
+                </button>
+              </h2>
+              <div id="collapse1" class="accordion-collapse collapse" aria-labelledby="heading1"
+                data-bs-parent="#sidebarAccordion">
+                <div class="accordion-body ps-4">
+                  <ul class="list-unstyled">
+                    <li class="d-flex align-items-center mb-2">
+                      <img
+                        src="Скриншоты категорий/Подкатегории/Трубы и фитинги/Снимок экрана 2025-03-23 132412_upscayl_4x_upscayl-standard-4x.png"
+                        class="subcategory-icon" alt="PP-R" />
+                      <a href="#" class="text-decoration-none text-dark">PP-R трубы</a>
+                    </li>
+                    <li class="d-flex align-items-center mb-2">
+                      <img
+                        src="Скриншоты категорий/Подкатегории/Трубы и фитинги/Снимок экрана 2025-03-23 132355_upscayl_4x_upscayl-standard-4x.png"
+                        class="subcategory-icon" alt="Сварные" />
+                      <a href="#" class="text-decoration-none text-dark">Фитинги сварные</a>
+                    </li>
+                    <li class="d-flex align-items-center">
+                      <img
+                        src="Скриншоты категорий/Подкатегории/Трубы и фитинги/Снимок экрана 2025-03-23 132417_upscayl_4x_upscayl-standard-4x.png"
+                        class="subcategory-icon" alt="Компрессионные" />
+                      <a href="#" class="text-decoration-none text-dark">Фитинги компрессионные</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="heading2">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                  <img src="Скриншоты категорий/Категории SVG/PNG/Канализация.png" class="category-icon"
+                    alt="Трубы" />Канализационные трубы и фитинги
+                </button>
+              </h2>
+              <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="heading2"
+                data-bs-parent="#sidebarAccordion">
+                <div class="accordion-body ps-4">
+                  <ul class="list-unstyled">
+                    <li class="d-flex align-items-center mb-2">
+                      <img
+                        src="Скриншоты категорий/Подкатегории/Трубы и фитинги/Снимок экрана 2025-03-23 132412_upscayl_4x_upscayl-standard-4x.png"
+                        class="subcategory-icon" alt="PP-R" />
+                      <a href="#" class="text-decoration-none text-dark">PP-R трубы</a>
+                    </li>
+                    <li class="d-flex align-items-center mb-2">
+                      <img
+                        src="Скриншоты категорий/Подкатегории/Трубы и фитинги/Снимок экрана 2025-03-23 132355_upscayl_4x_upscayl-standard-4x.png"
+                        class="subcategory-icon" alt="Сварные" />
+                      <a href="#" class="text-decoration-none text-dark">Фитинги сварные</a>
+                    </li>
+                    <li class="d-flex align-items-center">
+                      <img
+                        src="Скриншоты категорий/Подкатегории/Трубы и фитинги/Снимок экрана 2025-03-23 132417_upscayl_4x_upscayl-standard-4x.png"
+                        class="subcategory-icon" alt="Компрессионные" />
+                      <a href="#" class="text-decoration-none text-dark">Фитинги компрессионные</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="heading3">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                  <img src="img/icon-valves.svg" class="category-icon" alt="Арматура" />Запорная арматура
+                </button>
+              </h2>
+              <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="heading3"
+                data-bs-parent="#sidebarAccordion">
+                <div class="accordion-body ps-4">
+                  <ul class="list-unstyled">
+                    <li class="d-flex align-items-center mb-2">
+                      <img src="img/icon-ballvalve.svg" class="subcategory-icon" alt="Шаровые" />
+                      <a href="#" class="text-decoration-none text-dark">Шаровые краны</a>
+                    </li>
+                    <li class="d-flex align-items-center">
+                      <img src="img/icon-valve.svg" class="subcategory-icon" alt="Вентили" />
+                      <a href="#" class="text-decoration-none text-dark">Запорные вентили</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- БЛОК ПОДПИСКИ -->
+        <div class="subscribe-box mt-4">
+          <h6 class="mb-3">Подписывайтесь</h6>
+
+          <div class="d-flex gap-3">
+
+            <!-- Telegram -->
+            <a href="#" class="sub-icon tg" aria-label="Telegram">
+              <img src="img/social/tg.svg" alt="Telegram">
+            </a>
+
+            <!-- WhatsApp -->
+            <a href="#" class="sub-icon wa" aria-label="WhatsApp">
+              <img src="img/social/wa.svg" alt="WhatsApp">
+            </a>
+
+            <!-- VK -->
+            <a href="#" class="sub-icon vk" aria-label="VK">
+              <img src="img/social/vk.svg" alt="VK">
+            </a>
+
+            <!-- РЕКЛАМНЫЕ БАННЕРЫ -->
+
+          </div>
+        </div>
+      </aside>
+      <main class="col-md-9">
+        <div id="mainBanner" class="carousel slide mb-5" data-bs-ride="carousel">
+          <div class="carousel-indicators">
+            <button type="button" data-bs-target="#mainBanner" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#mainBanner" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#mainBanner" data-bs-slide-to="2"></button>
+          </div>
+
+          <div class="carousel-inner">
+            <div class="carousel-item active" data-bs-interval="5000">
+              <img src="./png/Не нашли товар 2.png" class="d-block w-100" alt="Баннер 1">
+            </div>
+            <div class="carousel-item" data-bs-interval="5000">
+              <img src="./png/Пополнение.png" class="d-block w-100" alt="Баннер 2">
+            </div>
+            <div class="carousel-item" data-bs-interval="5000">
+              <img src="./png/БЫСТРАЯ ДОСТАВКА.png" class="d-block w-100" alt="Баннер 3">
+            </div>
+          </div>
+
+          <button class="carousel-control-prev" type="button" data-bs-target="#mainBanner" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#mainBanner" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+          </button>
+        </div>
+
+
+        <!-- ОСНОВНЫЕ КАТЕГОРИИ ТОВАРОВ — ГОРИЗОНТАЛЬНАЯ ЛЕНТА -->
+        <h4 class="mb-4 text-center">Основные категории товаров</h4>
+
+        <div class="position-relative mb-4">
+
+          <!-- Левая стрелка -->
+          <button class="cat-arrow left-arrow d-none d-md-flex" id="catScrollLeft">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <!-- Лента категорий -->
+          <div id="categoriesStrip" class="d-flex flex-nowrap px-5 cat-strip pt-3">
+
+            <!-- Категория -->
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="./Скриншоты категорий/Категории SVG/PNG/Трубы и фитинги.png"
+                class="rounded mb-2 cat-img border p-3" alt="">
+              <div class="fw-semibold text-dark mt-2">Трубы и фитинги</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="./Скриншоты категорий/Категории SVG/PNG/Запорная арматура.png"
+                class="rounded mb-2 cat-img border p-3" alt="">
+              <div class="fw-semibold text-dark mt-2">Запорная арматура</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=Канализация" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Канализация</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=Сантехника" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Сантехника</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=Фильтры" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Фильтры</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=Инструмент" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Инструмент</div>
+            </a>
+
+          </div>
+
+          <!-- Правая стрелка -->
+          <button class="cat-arrow right-arrow d-none d-md-flex" id="catScrollRight">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- БЛОК ЗАЯВКИ -->
+        <div class="text-center my-5 border rounded-lg p-5">
+          <p class="fs-5 mb-3">Отправьте заявку менеджеру, он свяжется с Вами для оформления заказа</p>
+          <button class="btn btn-primary btn-lg px-4" data-bs-toggle="modal" data-bs-target="#requestModal">
+            Оставить заявку
+          </button>
+        </div>
+
+        <!-- МОДАЛЬНОЕ ОКНО ЗАЯВКИ -->
+        <div class="modal fade animate-modal" id="requestModal" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content p-3">
+
+              <div class="modal-header">
+                <h5 class="modal-title">Заявка менеджеру</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+
+              <div class="modal-body">
+                <form id="requestForm">
+
+                  <div class="mb-3">
+                    <label class="form-label">Ваше имя *</label>
+                    <input type="text" name="name" class="form-control" required>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Телефон *</label>
+                    <input type="text" name="phone" id="phoneInput" class="form-control" required>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Электронная почта *</label>
+                    <input type="email" name="email" id="emailInput" class="form-control" required>
+                  </div>
+
+                  <!-- Мини-капча -->
+                  <div class="mb-3">
+                    <label class="form-label">Введите число: <b id="captchaNumber"></b> *</label>
+                    <input type="number" class="form-control" id="captchaInput" required>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary w-100 py-2">Отправить</button>
+                </form>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- МОДАЛЬНОЕ ОКНО УСПЕХА -->
+        <div class="modal fade animate-modal" id="successModal" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-4 text-center">
+              <h4 class="mb-3">Заявка успешно отправлена!</h4>
+              <button class="btn btn-primary w-50 mx-auto" data-bs-dismiss="modal">Ок</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Хиты продаж -->
+        <h4 class="mb-4 mt-5 text-center">Хиты продаж</h4>
+
+        <div class="position-relative mb-4">
+
+          <!-- Левая стрелка -->
+          <button class="cat-arrow left-arrow d-none d-md-flex" id="popularScrollLeft">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <!-- Лента новинок -->
+          <div id="popularStrip" class="d-flex flex-nowrap px-5 cat-strip">
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=NEW" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Новый кран R250W</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=2025" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Трубы PP-R</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=Новинка" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Фильтры</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=⭐" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Сантехника</div>
+            </a>
+
+          </div>
+
+          <!-- Правая стрелка -->
+          <button class="cat-arrow right-arrow d-none d-md-flex" id="popularScrollRight">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- НОВИНКИ -->
+        <h4 class="mb-4 mt-5 text-center">Новинки</h4>
+
+        <div class="position-relative mb-4">
+
+          <!-- Левая стрелка -->
+          <button class="cat-arrow left-arrow d-none d-md-flex" id="newScrollLeft">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <!-- Лента новинок -->
+          <div id="newStrip" class="d-flex flex-nowrap px-5 cat-strip">
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=NEW" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Новый кран R250W</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=2025" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Трубы PP-R</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=Новинка" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Фильтры</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=⭐" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Сантехника</div>
+            </a>
+
+          </div>
+
+          <!-- Правая стрелка -->
+          <button class="cat-arrow right-arrow d-none d-md-flex" id="newScrollRight">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- АКЦИИ И РАСПРОДАЖА -->
+        <h4 class="mb-4 mt-5 text-center">Акции и распродажа</h4>
+
+        <div class="position-relative mb-4">
+
+          <!-- Левая стрелка -->
+          <button class="cat-arrow left-arrow d-none d-md-flex" id="saleScrollLeft">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <!-- Лента акций -->
+          <div id="saleStrip" class="d-flex flex-nowrap px-5 cat-strip">
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=-30%25" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Скидка на краны</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=-20%25" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Арматура</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=SALE" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Смесители</div>
+            </a>
+
+            <a href="#" class="cat-item text-center text-decoration-none">
+              <img src="https://placehold.co/150x150?text=🔥" class="rounded mb-2 cat-img" alt="">
+              <div class="fw-semibold text-dark">Сантехника</div>
+            </a>
+
+          </div>
+
+          <!-- Правая стрелка -->
+          <button class="cat-arrow right-arrow d-none d-md-flex" id="saleScrollRight">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- НАШИ ПЛЮСЫ -->
+        <div class="advantages-section my-5 py-4">
+          <div class="container">
+
+            <h4 class="mb-4 text-center fw-bold">Наши плюсы</h4>
+
+            <div class="row text-center gy-4">
+
+              <!-- Быстрая доставка -->
+              <div class="col-6 col-md-3">
+                <img src="https://placehold.co/60x60/0091c9/ffffff?text=🚚" class="mb-3 advantages-icon" alt="">
+                <div class="fw-bold mb-2">Быстрая доставка</div>
+                <div class="text-muted small">
+                  Привезём на следующий<br>будний день по Москве
+                </div>
+              </div>
+
+              <!-- Широкий ассортимент -->
+              <div class="col-6 col-md-3">
+                <img src="https://placehold.co/60x60/0091c9/ffffff?text=📦" class="mb-3 advantages-icon" alt="">
+                <div class="fw-bold mb-2">Широкий ассортимент</div>
+                <div class="text-muted small">
+                  Большой выбор сантехники<br>под любые потребности
+                </div>
+              </div>
+
+              <!-- Гарантия качества -->
+              <div class="col-6 col-md-3">
+                <img src="https://placehold.co/60x60/0091c9/ffffff?text=🛡" class="mb-3 advantages-icon" alt="">
+                <div class="fw-bold mb-2">Гарантия качества</div>
+                <div class="text-muted small">
+                  Только сертифицированные<br>товары от производителей
+                </div>
+              </div>
+
+              <!-- Скидки и бонусы -->
+              <div class="col-6 col-md-3">
+                <img src="https://placehold.co/60x60/0091c9/ffffff?text=%25" class="mb-3 advantages-icon" alt="">
+                <div class="fw-bold mb-2">Скидки и бонусы</div>
+                <div class="text-muted small">
+                  Доступные цены<br>и регулярные акции
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- БРЕНДЫ В ПРОДАЖЕ -->
+        <h4 class="mb-4 mt-5 text-center">Бренды в продаже</h4>
+
+        <div class="position-relative mb-4">
+
+          <!-- Левая стрелка -->
+          <button class="cat-arrow left-arrow d-none d-md-flex" id="brandsScrollLeft">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <!-- Лента брендов -->
+          <div id="brandsStrip" class="d-flex flex-nowrap px-5 cat-strip align-items-center" style="gap: 35px;">
+
+            <img src="https://placehold.co/140x70?text=Brand+1" class="brand-img" alt="Brand1">
+            <img src="https://placehold.co/140x70?text=Brand+2" class="brand-img" alt="Brand2">
+            <img src="https://placehold.co/140x70?text=Brand+3" class="brand-img" alt="Brand3">
+            <img src="https://placehold.co/140x70?text=Brand+4" class="brand-img" alt="Brand4">
+            <img src="https://placehold.co/140x70?text=Brand+5" class="brand-img" alt="Brand5">
+            <img src="https://placehold.co/140x70?text=Brand+6" class="brand-img" alt="Brand6">
+            <img src="https://placehold.co/140x70?text=Brand+7" class="brand-img" alt="Brand7">
+
+          </div>
+
+          <!-- Правая стрелка -->
+          <button class="cat-arrow right-arrow d-none d-md-flex" id="brandsScrollRight">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ========== ПОДВАЛ ДЛЯ ПК ========== -->
+  <footer class="footer-desktop d-none d-lg-block mt-5">
+    <div class="container py-5">
+
+      <div class="row">
+
+        <!-- Компания -->
+        <div class="col-lg-3">
+          <h6 class="footer-title">Компания</h6>
+          <ul class="footer-list">
+            <li><a href="#">На основную страницу</a></li>
+            <li><a href="#">Как сделать заказ</a></li>
+          </ul>
+        </div>
+
+        <!-- Информация -->
+        <div class="col-lg-3">
+          <h6 class="footer-title">Информация</h6>
+          <ul class="footer-list">
+            <li><a href="#">Оферта и политика конфиденциальности</a></li>
+            <li><a href="#">Политика обработки персональных данных</a></li>
+            <li><a href="#">Пользовательское соглашение</a></li>
+            <li><a href="#">Условия обмена и возврата</a></li>
+          </ul>
+        </div>
+
+        <!-- Сервисы -->
+        <div class="col-lg-3">
+          <h6 class="footer-title">Сервисы</h6>
+          <ul class="footer-list">
+            <li><a href="#">Контакты</a></li>
+            <li><a href="#">Доставка</a></li>
+            <li><a href="#">Оплата</a></li>
+            <li><a href="#">Самовывоз</a></li>
+            <li><a href="#">Сертификаты и документы</a></li>
+          </ul>
+        </div>
+
+        <!-- Мессенджеры -->
+        <div class="col-lg-3">
+          <h6 class="footer-title">Мессенджеры</h6>
+
+          <div class="footer-social mb-3">
+            <a href="#"><img src="img/social/tg.svg" alt="Telegram"></a>
+            <a href="#"><img src="img/social/wa.svg" alt="WhatsApp"></a>
+            <a href="#"><img src="img/social/vk.svg" alt="VK"></a>
+          </div>
+
+          <div class="footer-phone">
+            <b>+7 969 469 7602</b>
+            <div class="footer-phone-sub">справочная служба</div>
+          </div>
+        </div>
+
+      </div>
+
+      <hr class="footer-divider">
+
+      <div class="footer-bottom row align-items-center">
+        <div class="col-lg-6">
+          <img src="img/logo-footer.png" alt="Аквасокол" height="70">
+        </div>
+
+        <div class="col-lg-6 text-lg-end">
+          <img src="img/payments/mastercard.png" height="30">
+          <img src="img/payments/visa.png" height="30">
+          <img src="img/payments/mir.png" height="30">
+        </div>
+      </div>
+
+    </div>
+
+    <a href="#" class="btn-up"><i class="bi bi-arrow-up"></i></a>
+  </footer>
+
+  <!-- JS -->
+  <script>
+    function toggleSearch() {
+      const searchBar = document.getElementById("mobileSearchBar");
+      searchBar.classList.toggle("active");
+    }
+    function toggleCatalog() {
+      const catalog = document.getElementById("mobileCatalog");
+      catalog.classList.toggle("active");
+    }
+    // Десктоп: открыть каталог
+    document.getElementById("catalogToggle").addEventListener("click", () => {
+      document.getElementById("desktopCatalog").classList.toggle("show");
+    });
+
+    const strip = document.getElementById("categoriesStrip");
+    document.getElementById("catScrollLeft").onclick = () => strip.scrollLeft -= 250;
+    document.getElementById("catScrollRight").onclick = () => strip.scrollLeft += 250;
+
+    // Акции
+    document.getElementById("saleScrollLeft").onclick = () => saleStrip.scrollLeft -= 250;
+    document.getElementById("saleScrollRight").onclick = () => saleStrip.scrollLeft += 250;
+
+    // Новинки
+    document.getElementById("newScrollLeft").onclick = () => newStrip.scrollLeft -= 250;
+    document.getElementById("newScrollRight").onclick = () => newStrip.scrollLeft += 250;
+
+    // Хиты продаж
+    document.getElementById("popularScrollLeft").onclick = () => popularStrip.scrollLeft -= 250;
+    document.getElementById("popularScrollRight").onclick = () => popularStrip.scrollLeft += 250;
+
+    // Бренды
+    document.getElementById("brandsScrollLeft").onclick = () => brandsStrip.scrollLeft -= 250;
+    document.getElementById("brandsScrollRight").onclick = () => brandsStrip.scrollLeft += 250;
+
+    const form = document.getElementById("requestForm");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+
+      fetch("send_request.php", {
+        method: "POST",
+        body: formData
+      })
+        .then(r => r.text())
+        .then(response => {
+          // Закрываем форму заявки
+          const modal1 = bootstrap.Modal.getInstance(document.getElementById('requestModal'));
+          modal1.hide();
+
+          // Показываем окно успешной отправки
+          const modal2 = new bootstrap.Modal(document.getElementById('successModal'));
+          modal2.show();
+
+          form.reset();
+        })
+        .catch(err => alert("Ошибка отправки: " + err));
+    });
+
+    /* Мини-капча */
+    let captchaValue = Math.floor(Math.random() * 900 + 100);
+    document.getElementById("captchaNumber").innerText = captchaValue;
+
+    /* Маска телефона */
+    const phoneInput = document.getElementById("phoneInput");
+    phoneInput.addEventListener("input", function () {
+      let x = this.value.replace(/\D/g, "").substring(0, 11);
+      let formatted = "";
+
+      if (x.length > 1) formatted = "+7 (" + x.substring(1, 4);
+      if (x.length >= 5) formatted += ") " + x.substring(4, 7);
+      if (x.length >= 8) formatted += "-" + x.substring(7, 9);
+      if (x.length >= 10) formatted += "-" + x.substring(9, 11);
+
+      this.value = formatted;
+    });
+
+    /* Email проверка */
+    function validateEmail(email) {
+      return /^[\w.-]+@[\w.-]+\.\w{2,}$/i.test(email);
+    }
+
+    /* Отправка формы */
+    document.getElementById("requestForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      if (!validateEmail(document.getElementById("emailInput").value)) {
+        alert("Введите корректный e-mail");
+        return;
+      }
+
+      if (parseInt(document.getElementById("captchaInput").value) !== captchaValue) {
+        alert("Неверно введено число из капчи");
+        return;
+      }
+
+      const formData = new FormData(this);
+
+      fetch("send_request.php", {
+        method: "POST",
+        body: formData
+      })
+        .then(r => r.text())
+        .then(res => {
+          bootstrap.Modal.getInstance(document.getElementById("requestModal")).hide();
+          new bootstrap.Modal(document.getElementById("successModal")).show();
+          this.reset();
+        })
+        .catch(() => alert("Ошибка отправки"));
+    });
+
+    // появление кнопки вверх при прокрутке
+    window.addEventListener("scroll", () => {
+      const upBtnDesktop = document.querySelector(".btn-up");
+      const upBtnMobile = document.querySelector(".btn-up-mobile");
+
+      if (window.scrollY > 300) {
+        upBtnDesktop?.classList.add("show-up-btn");
+        upBtnMobile?.classList.add("show-up-btn");
+      } else {
+        upBtnDesktop?.classList.remove("show-up-btn");
+        upBtnMobile?.classList.remove("show-up-btn");
+      }
+    });
+
+    // плавный скролл вверх
+    document.querySelectorAll(".btn-up, .btn-up-mobile").forEach(btn => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+    });
+
+    async function initHome() {
+    const popular = await getPopularProducts();
+    // можно renderCarousel или renderProductsIntoGrid
+    // здесь рендерим в грид (контейнер должен иметь <div id="popular-strip" class="row"></div>)
+    // если у тебя блоки как в примере — оборачивай
+    const popContainer = document.getElementById("popular-strip");
+    popContainer.innerHTML = '<h4>Популярные товары</h4><div id="popRow" class="row"></div>';
+    renderProductsIntoGrid("popRow", popular, 4);
+
+    const sale = await getSaleProducts();
+    const saleContainer = document.getElementById("sale-strip");
+    saleContainer.innerHTML = '<h4>Распродажа</h4><div id="saleRow" class="row"></div>';
+    renderProductsIntoGrid("saleRow", sale, 4);
+
+    const nov = await getNewProducts();
+    const newContainer = document.getElementById("new-strip");
+    newContainer.innerHTML = '<h4>Новинки</h4><div id="newRow" class="row"></div>';
+    renderProductsIntoGrid("newRow", nov, 4);
+  }
+  initHome();
+
+  document.getElementById('globalSearch')?.addEventListener('input', async (e) => {
+  const q = e.target.value.trim();
+  if (!q) return;
+  const res = await searchProducts(q);
+  // отобрази результат в дропдауне или странице поиска
+  // например: renderProductsIntoGrid('searchResults', res, 4);
+});
+
+
+  </script>
 </body>
+
 </html>
