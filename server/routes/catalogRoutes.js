@@ -7,8 +7,9 @@ router.get('/', async (req, res) => {
   const { category, ...filters } = req.query
 
   let query = `
-    SELECT p.*
+    SELECT DISTINCT p.*, pi.image_url AS image
     FROM products p
+    LEFT JOIN product_images pi ON pi.product_id = p.id
     JOIN categories c ON p.category_id = c.id
     WHERE 1=1
   `

@@ -5,45 +5,49 @@ const filtersContainer = document.getElementById('filters');
 
 let categories = [];
 let attributes = [];
-let attributeSelects = {}; // select для каждого атрибута
+let attributeSelects = {};
 
+const API = "http://localhost:5000/api";
+
+// =====================
+// ЗАГРУЗКА ФИЛЬТРОВ
+// =====================
 async function loadFilters() {
-  // --- Очищаем контейнер фильтров ---
+
   filtersContainer.innerHTML = '';
 
-  // --- Фильтр по категориям ---
+  // --- Категории ---
   const categorySelect = document.createElement('select');
   categorySelect.className = 'form-select form-select-sm mb-2';
   categorySelect.id = 'categoryFilter';
-  filtersContainer.appendChild(categorySelect);
 
   categorySelect.innerHTML = `<option value="">Все категории</option>`;
+  filtersContainer.appendChild(categorySelect);
 
-  // Получаем категории с сервера
-  const catRes = await fetch('http://localhost:5000/api/categories');
+  const catRes = await fetch(`${API}/categories`);
   categories = await catRes.json();
 
   categories.forEach(cat => {
     if (!cat.parent_id) {
       categorySelect.innerHTML += `<option value="${cat.slug}">${cat.name}</option>`;
-      // подкатегории
-      const subcats = categories.filter(c => c.parent_id === cat.id);
-      subcats.forEach(sub => {
-        categorySelect.innerHTML += `<option value="${sub.slug}">&nbsp;&nbsp;${sub.name}</option>`;
+
+      const subs = categories.filter(c => c.parent_id === cat.id);
+      subs.forEach(sub => {
+        categorySelect.innerHTML += `<option value="${sub.slug}">— ${sub.name}</option>`;
       });
     }
   });
 
-  // --- Фильтры по характеристикам ---
-  const attrRes = await fetch('http://localhost:5000/api/attributes');
+  // --- Атрибуты ---
+  const attrRes = await fetch(`${API}/attributes`);
   attributes = await attrRes.json();
 
-  attributeSelects = {}; // очищаем старые selects
+  attributeSelects = {};
 
   attributes.forEach(attr => {
     const select = document.createElement('select');
     select.className = 'form-select form-select-sm mb-2';
-    select.id = `${attr.attribute_slug}Filter`;
+    select.id = `${attr.attribute_slug}`;
 
     let html = `<option value="">Все ${attr.attribute_name}</option>`;
     attr.values.forEach(v => {
@@ -52,52 +56,80 @@ async function loadFilters() {
 
     select.innerHTML = html;
     filtersContainer.appendChild(select);
+
     attributeSelects[attr.attribute_slug] = select;
   });
 }
 
-// Загрузка товаров с применением фильтров
+// =====================
+// ЗАГРУЗКА ТОВАРОВ
+// =====================
 async function loadProducts() {
-  const categorySlug = document.getElementById('categoryFilter').value || '';
+
+  const category = document.getElementById('categoryFilter').value;
   const query = new URLSearchParams();
 
+  if (category) query.append('category', category);
+
   for (const slug in attributeSelects) {
-    const value = attributeSelects[slug].value;
-    if (value) query.append(slug, value);
+    const val = attributeSelects[slug].value;
+    if (val) query.append(slug, val);
   }
 
-  const url = categorySlug
-  ? `http://localhost:5000/api/products/category/${categorySlug}?${query.toString()}`
-  : `http://localhost:5000/api/catalog?${query.toString()}`;
-
-  const res = await fetch(url);
+  const res = await fetch(`${API}/catalog?${query.toString()}`);
   const products = await res.json();
 
-  productsContainer.innerHTML = products.length
-    ? products.map(p => `
-        <div class="col-md-4 mb-3">
-          <div class="card h-100">
-            <img src="${p.image}" class="card-img-top" alt="${p.name}">
-            <div class="card-body">
-              <h5 class="card-title">${p.name}</h5>
-              <p class="card-text">${p.price} ₽</p>
-              <a href="product.html?slug=${p.slug}" class="btn btn-primary btn-sm">Подробнее</a>
-            </div>
-          </div>
-        </div>
-      `).join('')
-    : '<p>Товары не найдены по выбранным фильтрам.</p>';
+  renderProducts(products);
 }
 
-// Применение фильтров
-applyBtn.addEventListener('click', () => loadProducts());
+// =====================
+// РЕНДЕР
+// =====================
+function renderProducts(products) {
 
-// Сброс фильтров
+  productsContainer.innerHTML = '';
+
+  if (!products.length) {
+    productsContainer.innerHTML = '<p>Товары не найдены</p>';
+    return;
+  }
+
+  products.forEach(p => {
+    productsContainer.innerHTML += `
+      <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm">
+          <img src="${p.image || 'https://via.placeholder.com/300x200'}" 
+               class="card-img-top">
+
+          <div class="card-body d-flex flex-column">
+            <h6>${p.name}</h6>
+            <p class="fw-bold">${p.price} ₽</p>
+
+            <a href="product.html?slug=${p.slug}" 
+               class="btn btn-primary btn-sm mt-auto">
+               Подробнее
+            </a>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+}
+
+// =====================
+// СОБЫТИЯ
+// =====================
+applyBtn.addEventListener('click', loadProducts);
+
 resetBtn.addEventListener('click', () => {
   document.getElementById('categoryFilter').value = '';
-  for (const slug in attributeSelects) attributeSelects[slug].value = '';
+  for (const key in attributeSelects) {
+    attributeSelects[key].value = '';
+  }
   loadProducts();
 });
 
-// Инициализация
+// =====================
+// СТАРТ
+// =====================
 loadFilters().then(loadProducts);
